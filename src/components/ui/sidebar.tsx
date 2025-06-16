@@ -22,9 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useFilters } from "@/contexts/FilterContext"
-import { Filter } from "lucide-react"
+
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -152,7 +150,7 @@ function SidebarProvider({
   )
 }
 
-function Sidebar({
+export default function Sidebar({
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",

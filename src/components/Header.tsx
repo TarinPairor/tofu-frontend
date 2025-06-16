@@ -11,11 +11,11 @@ export default function Header() {
             <Home className="h-6 w-6" />
             <span className="font-bold">Home</span>
           </Link>
-          <Link to="/accessibility-map" className="mr-6 flex items-center space-x-2">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
             <MapPin className="h-6 w-6" />
             <span className="font-bold">Accessibility Map</span>
           </Link>
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <BarChart className="h-6 w-6" />
             <span className="font-bold">Dashboard</span>
           </Link>
