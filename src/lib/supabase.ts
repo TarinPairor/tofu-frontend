@@ -13,7 +13,7 @@ export interface TofuProduct {
   created_at: string
   product_name: string | null
   user_id: number
-  status: string | null
+  sustainability_level: string | null
   product_link: string | null
   product_image: string | null
   product_description: string | null
@@ -230,6 +230,22 @@ export const productApi = {
     }
 
     return data || []
+  },
+
+  // Add new product
+  async addProduct(product: Omit<TofuProduct, 'id' | 'created_at'>): Promise<TofuProduct | null> {
+    const { data, error } = await supabase
+      .from('tofu_product')
+      .insert([product])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error adding product:', error)
+      return null
+    }
+
+    return data
   }
 }
 
