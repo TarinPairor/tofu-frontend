@@ -75,11 +75,13 @@ function Index() {
 
         {/* Sustainability Score as a Bar */}
         <div className="p-4 border rounded bg-muted text-muted-foreground">
+          {/* Score title and value */}
           <div className="flex items-center mb-2">
             <span className="font-semibold">Sustainability Score:</span>
             <span className="ml-2">{result.analysis.sustainabilityScore}/10</span>
           </div>
-          <div className="flex items-center w-full space-x-1">
+          {/* Score bar */}
+          <div className="flex items-center w-full space-x-1 mb-4">
             {[...Array(10)].map((_, idx) => (
               <div
                 key={idx}
@@ -88,32 +90,60 @@ function Index() {
               />
             ))}
           </div>
-        </div>
-        
-        {/* Sustainability Criticism */}
-        <div className="p-4 border rounded bg-muted text-muted-foreground">
-          <span className="font-semibold">Sustainability Criticism:</span>
-          <ul className="list-disc pl-5">
-            {result.analysis.sustainabilityCriticism.map((item: string, idx: number) => (
-              <li key={idx}>{item}</li>
-            ))}
-          </ul>
+          {/* Criticism bullet points */}
+          <div>
+            <span className="font-semibold">Sustainability Criticism:</span>
+            <ul className="list-disc pl-5 mt-1">
+              {result.analysis.sustainabilityCriticism.map(
+                (
+                  item: { criticism: string; citation?: string; citation_number?: number },
+                  idx: number
+                ) => (
+                  <li key={idx} className="mb-2">
+                    {item.criticism}
+                    {item.citation && (
+                      <span className="block text-xs text-blue-600 dark:text-blue-300">
+                        [<a href={item.citation} target="_blank" rel="noopener noreferrer">
+                          Reference
+                        </a>]
+                      </span>
+                    )}
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
         </div>
 
         
 
-        {/* Alternative Products */}
-        <div className="p-4 border rounded bg-muted text-muted-foreground">
-          <span className="font-semibold">Alternative Products:</span>
-          <ul className="list-disc pl-5">
-            {result.analysis.alternativeProducts.map(
-              (alt: { name: string; reason: string }, idx: number) => (
-                <li key={idx}>
-                  <span className="font-semibold">{alt.name}:</span> {alt.reason}
-                </li>
-              )
-            )}
-          </ul>
+        {/* Alternatives Title */}
+        <div className="mb-2 text-lg font-bold text-center">Alternatives</div>
+        {/* Alternatives Boxes */}
+        <div className="flex flex-row justify-center space-x-4">
+          {result.analysis.alternativeProducts.map(
+            (
+              alt: {
+                name: string;
+                reason: string;
+                product_link: string;
+                citation?: string;
+                citation_number?: number;
+              },
+              idx: number
+            ) => (
+              <a
+                key={idx}
+                href={alt.product_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 p-4 border rounded bg-muted text-muted-foreground min-w-[180px] max-w-xs transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
+              >
+                <div className="font-bold mb-2">{alt.name}</div>
+                <div className="text-sm mb-2">{alt.reason}</div>
+              </a>
+            )
+          )}
         </div>
       </div>
     )}
