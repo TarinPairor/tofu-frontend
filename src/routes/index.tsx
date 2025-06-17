@@ -37,6 +37,7 @@ function Index() {
   const [loading, setLoading] = useState(false);
   // const [response, setResponse] = useState('');
   const [result, setResult] = useState<ResultType>(null);
+  const [showSubScores, setShowSubScores] = useState(false);
 
   // Replace with actual URL that is stored as env variable or configuration
   // const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
@@ -98,23 +99,70 @@ function Index() {
         {/* Product Name outside the boxes */}
         <h2 className="text-lg font-bold text-center">{result.product.productName}</h2>
 
-        {/* Sustainability Score as a Bar */}
-        <div className="p-4 border rounded bg-muted text-muted-foreground">
-          {/* Score title and value */}
-          <div className="flex items-center mb-2">
-            <span className="font-semibold">Sustainability Score:</span>
-            <span className="ml-2 font-semibold">{result.analysis.sustainabilityScore}/10</span>
-          </div>
-          {/* Score bar */}
-          <div className="flex items-center w-full space-x-1 mb-4">
-            {[...Array(10)].map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-4 flex-1 rounded ${idx < result.analysis.sustainabilityScore ? 'bg-green-500' : 'bg-gray-300'}`}
-                title={`Score ${idx + 1}`}
-              />
-            ))}
-          </div>
+        {/* Multiple Sustainability Scores as Bars */}
+        <div className="p-4 border rounded bg-muted text-muted-foreground space-y-4">
+          {/* Total Sustainability Score */}
+          {"sustainabilityScore" in result.analysis && (
+            <div className="mb-4">
+              <div className="flex items-center mb-1">
+                <span className="font-semibold text-lg">Total Sustainability Score:</span>
+                <span className="ml-2 font-semibold text-lg">{result.analysis.sustainabilityScore}/10</span>
+              </div>
+              <div className="flex items-center w-full space-x-1 mb-2">
+                {[...Array(10)].map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-4 flex-1 rounded ${idx < Math.round(result.analysis.sustainabilityScore) ? 'bg-blue-500' : 'bg-gray-300'}`}
+                    title={`Score ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Expandable Sub Scores */}
+          <button
+            className="w-full text-left font-semibold py-2 px-3 rounded bg-accent hover:bg-accent/80 transition mb-2"
+            onClick={() => setShowSubScores((prev) => !prev)}
+          >
+            {showSubScores ? 'Hide Sub-Scores ▲' : 'Show Sub-Scores ▼'}
+          </button>
+          {showSubScores && (
+            <div className="space-y-4">
+              {([
+                { label: "Materials & Sourcing", key: "sustainabilityScore_materialsAndSourcing" },
+                { label: "Production & Manufacturing", key: "sustainabilityScore_productionAndManufacturing" },
+                { label: "Distribution & Logistics", key: "sustainabilityScore_distributionAndLogistics" },
+                { label: "Product Use", key: "sustainabilityScore_productUse" },
+                { label: "End-of-Life Management", key: "sustainabilityScore_endOfLifeManagement" },
+              ] as const).map(({ label, key }) => {
+                type SubScoreKey =
+                  | "sustainabilityScore_materialsAndSourcing"
+                  | "sustainabilityScore_productionAndManufacturing"
+                  | "sustainabilityScore_distributionAndLogistics"
+                  | "sustainabilityScore_productUse"
+                  | "sustainabilityScore_endOfLifeManagement";
+                const analysis = result.analysis as typeof result.analysis & Partial<Record<SubScoreKey, number>>;
+                return analysis[key as SubScoreKey] !== undefined && (
+                  <div key={key}>
+                    <div className="flex items-center mb-1">
+                      <span className="font-semibold">{label}:</span>
+                      <span className="ml-2 font-semibold">{analysis[key as SubScoreKey]}/10</span>
+                    </div>
+                    <div className="flex items-center w-full space-x-1 mb-2">
+                      {[...Array(10)].map((_, idx) => (
+                        <div
+                          key={idx}
+                          className={`h-4 flex-1 rounded ${idx < (analysis[key as SubScoreKey] ?? 0) ? 'bg-green-500' : 'bg-gray-300'}`}
+                          title={`Score ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {/* Criticism bullet points */}
           <div>
             <span className="font-semibold">Sustainability Criticism:</span>
@@ -123,18 +171,23 @@ function Index() {
                 (
                   item: { criticism: string; citation?: string; citation_number?: number },
                   idx: number
-                ) => (
-                  <li key={idx} className="mb-2">
-                    {item.criticism}
-                    {item.citation && (
-                      <span className="block text-xs text-blue-600 dark:text-blue-300">
-                        [<a href={item.citation} target="_blank" rel="noopener noreferrer">
-                          Reference
-                        </a>]
-                      </span>
-                    )}
-                  </li>
-                )
+                ) => {
+                  const isValidCitation =
+                    typeof item.citation === 'string' &&
+                    (item.citation.startsWith('http://') || item.citation.startsWith('https://'));
+                  return (
+                    <li key={idx} className="mb-2">
+                      {item.criticism}
+                      {isValidCitation && (
+                        <span className="block text-xs text-blue-600 dark:text-blue-300">
+                          [<a href={item.citation} target="_blank" rel="noopener noreferrer">
+                            Reference
+                          </a>]
+                        </span>
+                      )}
+                    </li>
+                  );
+                }
               )}
             </ul>
           </div>
