@@ -10,7 +10,7 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import logo from './images/logo.png'; // Adjust the path as necessary
+import logo from './images/logo.png';
 import { useState } from 'react';
 import { useMobile } from '@/hooks/use-mobile';
 
@@ -106,4 +106,4 @@ export function Navbar() {
       </div>
     </nav>
   );
-} 
+}
