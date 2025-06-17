@@ -7,11 +7,35 @@ export const Route = createFileRoute('/')({
   component: Index,
 })
 
+type ResultType = {
+  product: {
+    productName: string;
+    // add other product fields if needed
+  };
+  analysis: {
+    sustainabilityScore: number;
+    sustainabilityCriticism: Array<{
+      criticism: string;
+      citation?: string;
+      citation_number?: number;
+    }>;
+    alternativeProducts: Array<{
+      name: string;
+      reason: string;
+      product_link: string;
+      citation?: string;
+      citation_number?: number;
+    }>;
+    // add other analysis fields if needed
+  };
+  error?: string;
+} | { error: string } | null;
+
 function Index() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ResultType>(null);
 
   // Replace with actual URL that is stored as env variable or configuration
   const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
@@ -68,7 +92,7 @@ function Index() {
       <Button className="w-96" variant="default" onClick={handleSubmit}>
         Submit
       </Button>
-      {result && !result.error && (
+      {result && !result.error && 'product' in result && (
       <div className="w-96 flex flex-col items-stretch space-y-4 mt-4">
         {/* Product Name outside the boxes */}
         <h2 className="text-lg font-bold text-center">{result.product.productName}</h2>
@@ -78,7 +102,7 @@ function Index() {
           {/* Score title and value */}
           <div className="flex items-center mb-2">
             <span className="font-semibold">Sustainability Score:</span>
-            <span className="ml-2">{result.analysis.sustainabilityScore}/10</span>
+            <span className="ml-2 font-semibold">{result.analysis.sustainabilityScore}/10</span>
           </div>
           {/* Score bar */}
           <div className="flex items-center w-full space-x-1 mb-4">
