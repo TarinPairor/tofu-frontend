@@ -1,44 +1,56 @@
 import { FiShoppingBag, FiHome, FiSmartphone, FiPackage } from 'react-icons/fi';
-import Carousel from '@/blocks/Components/Carousel/Carousel';
+import { useRef } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
+import { CategoryCard } from '@/components/ui/category-card';
 
-const items = [
+const categories = [
   {
-    id: 1,
     title: 'Fashion and Apparel (Fast Fashion)',
     description: 'Explore sustainable alternatives to fast fashion',
-    icon: <FiShoppingBag className="carousel-icon" />
+    Icon: FiShoppingBag
   },
   {
-    id: 2,
     title: 'Personal Care and Household Products',
     description: 'Discover eco-friendly personal care options',
-    icon: <FiHome className="carousel-icon" />
+    Icon: FiHome
   },
   {
-    id: 3,
     title: 'Consumer Electronics',
     description: 'Find sustainable electronics and repair options',
-    icon: <FiSmartphone className="carousel-icon" />
+    Icon: FiSmartphone
   },
   {
-    id: 4,
     title: 'Disposable Consumer Goods',
     description: 'Learn about reusable alternatives',
-    icon: <FiPackage className="carousel-icon" />
+    Icon: FiPackage
   }
 ];
 
 export const BrandCarousel = () => {
+  const autoplay = useRef(
+    Autoplay({ delay: 3800, stopOnInteraction: false, stopOnMouseEnter: true })
+  );
+
+  const [emblaRef] = useEmblaCarousel(
+    { 
+      loop: true,
+      align: "start",
+      slidesToScroll: 1
+    },
+    [autoplay.current]
+  );
+
   return (
-    <div className="flex justify-center items-center w-full overflow-hidden">
-      <div className="w-full" style={{ maxWidth: "calc(400px + 32px)" }}>
-        <Carousel
-          items={items}
-          baseWidth={400}
-          autoplay={true}
-          autoplayDelay={2500}
-          loop={true}
-        />
+    <div className="w-full max-w-5xl mx-auto px-4">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {categories.map((category, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0 pl-4 md:flex-[0_0_50%] lg:flex-[0_0_33.333%]">
+              <CategoryCard {...category} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
