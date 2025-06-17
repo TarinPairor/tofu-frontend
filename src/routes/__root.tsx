@@ -23,7 +23,7 @@ export const Route = createRootRoute({
             </Button>
           </div>
         </header>
-        <main className="container py-6">
+        <main className="w-full px-0 py-6">
           <Outlet />
         </main>
       </div>
