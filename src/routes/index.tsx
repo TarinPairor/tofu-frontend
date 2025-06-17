@@ -12,11 +12,14 @@ function Index() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState('');
 
+  // Replace with actual URL that is stored as env variable or configuration
+  const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
+  const testUrl = 'tofu-backend-gules.vercel.app'; // Example URL for testing
   const handleSubmit = async () => {
     setLoading(true);
     try {
       // Send HTTP POST request to backend
-      const postResponse = await fetch(`https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io`, {
+      const postResponse = await fetch(postmanUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', // Specify JSON format
