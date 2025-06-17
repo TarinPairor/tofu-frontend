@@ -42,7 +42,7 @@ function Index() {
 
   // Replace with actual URL that is stored as env variable or configuration
   // const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
-  // const URL = 'https://tofu-backend-gules.vercel.app/eval'; // Example URL for testing
+  // const URL = 'https://tofu-backend-gules.vercel.app'; // Example URL for testing
   // const URL = 'http://localhost:3001';
   const handleSubmit = async () => {
     setLoading(true);
