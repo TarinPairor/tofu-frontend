@@ -1,6 +1,6 @@
 // import { useNavigate } from '@tanstack/react-router';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Badge } from '@/components/ui/badge';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react'
 import { productApi } from '@/lib/supabase'

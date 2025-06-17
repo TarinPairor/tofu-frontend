@@ -34,13 +34,13 @@ type ResultType = {
 function Index() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState('');
+  // const [response, setResponse] = useState('');
   const [result, setResult] = useState<ResultType>(null);
 
   // Replace with actual URL that is stored as env variable or configuration
-  const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
+  // const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
   const testUrl = 'https://tofu-backend-gules.vercel.app/eval'; // Example URL for testing
-  const testUrl2 = 'http://localhost:3001';
+  // const testUrl2 = 'http://localhost:3001';
   const handleSubmit = async () => {
     setLoading(true);
     try {
