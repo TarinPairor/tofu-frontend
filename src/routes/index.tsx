@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { URL } from '@/constants/url'
+import { DataVerification } from '@/components/DataVerification'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -193,7 +194,12 @@ function Index() {
           </div>
         </div>
 
-        
+        {/* Data Verification Component */}
+        <DataVerification
+          productName={result.product.productName}
+          sustainabilityScore={result.analysis.sustainabilityScore}
+          criticisms={result.analysis.sustainabilityCriticism}
+        />
 
         {/* Alternatives Title */}
         <div className="mb-2 text-lg font-bold text-center">Alternatives</div>

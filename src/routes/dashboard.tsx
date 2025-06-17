@@ -165,7 +165,7 @@ function Dashboard() {
             >
               {loading ? 'Analyzing...' : 'Analyze'}
             </Button>
-          </div>
+              </div>
           {error && (
             <p className="text-sm text-red-500 mt-2">{error}</p>
           )}
@@ -173,13 +173,13 @@ function Dashboard() {
       </Card>
 
       <Card>
-        <CardHeader>
+              <CardHeader>
           <CardTitle>Your Products</CardTitle>
           <CardDescription>
             Products you've analyzed for sustainability
           </CardDescription>
-        </CardHeader>
-        <CardContent>
+              </CardHeader>
+              <CardContent>
           {loadingProducts ? (
             // Loading skeleton
             <div className="space-y-4">
@@ -239,10 +239,10 @@ function Dashboard() {
                         </a>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
           )}
         </CardContent>
       </Card>
