@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Input } from '@/components/ui/input' 
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
+import { URL } from '@/constants/url'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -39,13 +40,13 @@ function Index() {
 
   // Replace with actual URL that is stored as env variable or configuration
   // const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
-  const testUrl = 'https://tofu-backend-gules.vercel.app/eval'; // Example URL for testing
-  // const testUrl2 = 'http://localhost:3001';
+  // const URL = 'https://tofu-backend-gules.vercel.app/eval'; // Example URL for testing
+  // const URL = 'http://localhost:3001';
   const handleSubmit = async () => {
     setLoading(true);
     try {
       // Send HTTP POST request to backend
-      const postResponse = await fetch(testUrl, {
+      const postResponse = await fetch(URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', // Specify JSON format
