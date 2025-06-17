@@ -52,8 +52,6 @@ function Index() {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-4">
-      <h1 className="text-4xl font-bold">Welcome</h1>
-      <p className="text-muted-foreground">We're ready to measure the sustainability of any online brand!</p>
       <h1 className="text-xl font-bold">Please enter a URL below:</h1>
       <Input 
         type="text" 
