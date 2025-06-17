@@ -6,7 +6,7 @@ To run this application:
 
 ```bash
 pnpm install
-npm run dev  
+pnpm run dev  
 ```
 
 # Building For Production
@@ -36,9 +36,9 @@ This project uses [Biome](https://biomejs.dev/) for linting and formatting. The 
 
 
 ```bash
-npm run lint
-npm run format
-npm run check
+pnpm run lint
+pnpm run format
+pnpm run check
 ```
 
 
