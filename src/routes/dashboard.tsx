@@ -20,14 +20,17 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useQuery } from '@tanstack/react-query'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { X } from 'lucide-react'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
 })
 
-function Dashboard() {
+export default function Dashboard() {
   const [url, setUrl] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<TofuProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
@@ -37,6 +40,28 @@ function Dashboard() {
     sustainability_level: '',
     product_description: '',
   })
+  const [showScore, setShowScore] = useState(true)
+
+  const { data: productsData } = useQuery<TofuProduct[]>({
+    queryKey: ['products'],
+    queryFn: () => productApi.getAllProducts()
+  })
+
+  const [averageScore, setAverageScore] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (productsData && productsData.length > 0) {
+      const scores = productsData
+        .map((p: TofuProduct) => parseInt(p.sustainability_level || '0'))
+        .filter((score: number) => !isNaN(score))
+      
+      if (scores.length > 0) {
+        const average = scores.reduce((a: number, b: number) => a + b, 0) / scores.length
+        const roundedAverage = Math.round(average * 10) / 10
+        setAverageScore(roundedAverage)
+      }
+    }
+  }, [productsData])
 
   // Fetch user's products
   useEffect(() => {
@@ -63,7 +88,7 @@ function Dashboard() {
   }, [])
 
   const handleSubmit = async () => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
 
     try {
@@ -88,15 +113,21 @@ function Dashboard() {
 
       const data = await response.json()
 
+      console.log(data)
+
+
+    
       // Add product to database
       const newProduct = await productApi.addProduct({
-        product_name: data.data.product.name,
+        product_name: data.data.product.productName,
         user_id: user.id,
-        sustainability_level: data.data.analysis.sustainability_score,
+        sustainability_level: data.data.analysis.sustainabilityScore,
         product_link: url,
         product_image: data.data.product.image,
         product_description: data.data.product.description,
       })
+
+    
 
       if (newProduct) {
         setProducts(prev => [newProduct, ...prev])
@@ -106,7 +137,7 @@ function Dashboard() {
       console.error('Error:', err)
       setError('Failed to analyze product')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -141,8 +172,38 @@ function Dashboard() {
     }
   }
 
+  const getScoreMessage = (score: number) => {
+    if (score < 5) {
+      return {
+        title: "🌱 Room for Improvement",
+        description: `Your sustainability score is ${score}/10. Consider choosing more eco-friendly products to help protect our planet!`
+      }
+    } else {
+      return {
+        title: "🌟 Great Job!",
+        description: `Your sustainability score is ${score}/10. Keep up the amazing work in making eco-conscious choices!`
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto p-4 space-y-6">
+      {showScore && averageScore !== null && (
+        <Alert className={`mb-4 ${averageScore < 5 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+          <div className="flex justify-between items-center">
+            <div>
+              <AlertTitle>{getScoreMessage(averageScore).title}</AlertTitle>
+              <AlertDescription>
+                {getScoreMessage(averageScore).description}
+              </AlertDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowScore(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Add New Product</CardTitle>
@@ -161,9 +222,9 @@ function Dashboard() {
             />
             <Button 
               onClick={handleSubmit}
-              disabled={loading || !url}
+              disabled={isLoading || !url}
             >
-              {loading ? 'Analyzing...' : 'Analyze'}
+              {isLoading ? 'Analyzing...' : 'Analyze'}
             </Button>
               </div>
           {error && (

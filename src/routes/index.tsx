@@ -48,7 +48,7 @@ function Index() {
     setLoading(true);
     try {
       // Send HTTP POST request to backend
-      const postResponse = await fetch(URL, {
+      const postResponse = await fetch(`${URL}/eval`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', // Specify JSON format
