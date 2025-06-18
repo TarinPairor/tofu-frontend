@@ -1,3 +1,37 @@
+
+# 1. Live Demo: Analyze a Brand in Real-Time
+This is the core feature of Triple Thread, designed for a shopper who is already on a product page and needs immediate insight.
+Link: https://tofu-frontend-indol.vercel.app/
+How to test:
+Go to a popular online store (like Nike, H&M, Zara, Amazon, etc.) and find a product page.
+Copy the full URL from your browser's address bar.
+Paste the URL into the input field on our homepage and click "Submit".
+Observe: In seconds, you'll receive a full sustainability report, a summary of the AI's research obtained in the data verification segment after processing, and a list of more sustainable alternative brands to consider.
+# 2. Proactive Discovery: Search by Product Category
+This feature is for users at the beginning of their shopping journey who want to start by finding sustainable brands.
+Link: https://tofu-frontend-indol.vercel.app/product_search
+How to test:
+Navigate to the Product Search page.
+Instead of a URL, type in a general product category, such as "running shoes," "winter jacket," or "eco-friendly backpack".
+Click "Search".
+Observe: The page will return a list of top-rated sustainable brands known for that product category, empowering you to make a better choice from the start.
+# 3. Your Impact Hub: The Personal Dashboard
+This is where we address sustained user engagement, turning sustainable shopping into a rewarding habit. You'll need an account to access this.
+Link: https://tofu-frontend-indol.vercel.app/dashboard
+How to test:
+First, create a quick account using the /login link below.
+Navigate to your Dashboard.
+Explore: Here you'll find the gamification features designed to encourage long-term use. Check out the Progress Calendar that tracks your positive actions, the Community Leaderboard to see how you stack up, and charts visualizing your improving shopping habits over time.
+# 4. Create an Account
+Unlock the full personalized experience of Triple Thread by creating an account.
+Link: https://tofu-frontend-indol.vercel.app/login
+How to test:
+Click the link and sign up for a free account.
+Once logged in, your search history and progress will be saved, and you can fully interact with the Dashboard features.
+
+# Below is the developer guide:
+
+
 Welcome to your new TanStack app! 
 
 # Getting Started
