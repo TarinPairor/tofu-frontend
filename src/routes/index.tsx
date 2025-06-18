@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { URL } from '@/constants/url'
 import { DataVerification } from '@/components/DataVerification'
 import { BrandCarousel } from '@/components/brand_carousel'
+import TextPressure from '@/components/TextPressure'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -95,7 +96,19 @@ function Index() {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-4">
-      <h1 className="text-xl font-bold">Enter a product URL below:</h1>
+      <TextPressure
+        text="Enter a product URL below:"
+        flex={true}
+        alpha={false}
+        stroke={false}
+        width={true}
+        weight={true}
+        italic={true}
+        textColor="#ffffff"
+        strokeColor="#ff0000"
+        minFontSize={12}
+      />
+      {/* <h1 className="text-xl font-bold">Enter a product URL below:</h1> */}
       <Input
         type="text"
         placeholder="https://example.com"
