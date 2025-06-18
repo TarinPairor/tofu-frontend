@@ -19,8 +19,6 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 // import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { X, BarChart3, Trophy, Star, Leaf, Trash2, ShoppingCart, ExternalLink } from 'lucide-react'
@@ -33,10 +31,10 @@ export const Route = createFileRoute('/dashboard')({
 export default function Dashboard() {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [showScore, setShowScore] = useState(true)
+  const [, setShowScore] = useState(true)
   const [, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<TofuProduct[]>([])
-  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [, setLoadingProducts] = useState(true)
   const [productToDelete, setProductToDelete] = useState<TofuProduct | null>(null)
   const [productToEdit, setProductToEdit] = useState<TofuProduct | null>(null)
   const [editName, setEditName] = useState('')
