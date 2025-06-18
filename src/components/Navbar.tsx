@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Home, ShoppingBag, User, Search, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -17,7 +17,7 @@ import { cookies } from '@/lib/cookies';
 
 export function Navbar() {
   const isMobile = useMobile();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState<{ id: number; username: string } | null>(null);
 
   useEffect(() => {
@@ -32,24 +32,24 @@ export function Navbar() {
     setUser(null);
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark', !isDarkMode);
-  };
+  // const toggleDarkMode = () => {
+  //   setIsDarkMode(!isDarkMode);
+  //   document.documentElement.classList.toggle('dark', !isDarkMode);
+  // };
 
   return (
     <nav className="w-full bg-background border-b">
       <div className="flex items-center justify-between px-8 h-16">
         <div className="flex items-center gap-4">
-          <Button
+          {/* <Button
             onClick={toggleDarkMode}
             className="text-sm font-medium transition-colors hover:text-primary"
           >
             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-          </Button>
-          {user && (
+          </Button> */}
+          {/* {user && (
             <span className="text-sm font-medium">Welcome, {user.username}</span>
-          )}
+          )} */}
         </div>
         <div className="flex h-16 items-center px-4 w-full">
           <NavigationMenu>
