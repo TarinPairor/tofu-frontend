@@ -34,7 +34,7 @@ export function Navbar() {
         </Button>
         <div className="flex h-16 items-center px-4 w-full">
           <NavigationMenu>
-            <NavigationMenuList>
+            <NavigationMenuList className="flex gap-8">
               <NavigationMenuItem>
                 <Link to="/" className="flex items-center gap-2">
                   <Home className="h-5 w-5" />
