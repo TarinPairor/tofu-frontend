@@ -76,8 +76,11 @@ function Index() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <h1 className="text-4xl font-bold">Loading...</h1>
+      <div className="flex flex-col items-center justify-center min-h-[300px] space-y-6">
+        {/* Spinner */}
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 border-solid"></div>
+        <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-300">Analyzing product...</h1>
+        <p className="text-muted-foreground text-center">Please wait while we measure this product's sustainability.<br />This may take a few seconds.</p>
       </div>
     );
   }
