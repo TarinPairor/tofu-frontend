@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { URL } from '@/constants/url'
 import { DataVerification } from '@/components/DataVerification'
 import { BrandCarousel } from '@/components/brand_carousel'
-import TextPressure from '@/components/TextPressure'
+import { motion } from 'framer-motion'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -96,19 +96,31 @@ function Index() {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-4">
-      <TextPressure
-        text="Enter a product URL below:"
-        flex={true}
-        alpha={false}
-        stroke={false}
-        width={true}
-        weight={true}
-        italic={true}
-        textColor="#ffffff"
-        strokeColor="#ff0000"
-        minFontSize={12}
-      />
-      {/* <h1 className="text-xl font-bold">Enter a product URL below:</h1> */}
+      <motion.div 
+        className="text-center space-y-4 mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.h1 
+          className="text-4xl font-bold bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-transparent"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          Discover Product Sustainability
+        </motion.h1>
+        <motion.p 
+          className="text-lg text-gray-600 max-w-2xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          Search the sustainability levels of any product. Simply paste the product URL below and we'll analyze its environmental impact.
+        </motion.p>
+      </motion.div>
+
+    
       <Input
         type="text"
         placeholder="https://example.com"
