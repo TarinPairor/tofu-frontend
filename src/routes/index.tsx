@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { URL } from '@/constants/url'
 import { DataVerification } from '@/components/DataVerification'
+import { BrandCarousel } from '@/components/brand_carousel'
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -252,9 +253,12 @@ function Index() {
           <p>{result.error}</p>
         </div>
       )}
+      <div className="w-full bg-muted/50 py-12">
+        <h2 className="text-2xl font-bold text-center mb-8">Explore Categories</h2>
+        <BrandCarousel />
+      </div>
     </div>
   );
 }
-
 
 
