@@ -13,6 +13,7 @@ interface StoreRecommendation {
   reasons: string[]
   productPrice: string
   sustainabilityInitiatives: string[]
+  productLink: string
 }
 
 interface SearchResponse {
@@ -143,8 +144,17 @@ function ProductSearch() {
                           ))}
                         </ul>
                       </div>
-                      <div className="text-sm font-medium">
-                        Price Range: {store.productPrice}
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium">
+                          Price Range: {store.productPrice}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(store.productLink, '_blank')}
+                        >
+                          Visit Store
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

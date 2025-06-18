@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { URL } from '@/constants/url'
+import { DataVerification } from '@/components/DataVerification'
 import { BrandCarousel } from '@/components/brand_carousel'
 
 export const Route = createFileRoute('/')({
@@ -12,7 +13,6 @@ export const Route = createFileRoute('/')({
 type ResultType = {
   product: {
     productName: string;
-    // add other product fields if needed
   };
   analysis: {
     sustainabilityScore: number;
@@ -28,7 +28,6 @@ type ResultType = {
       citation?: string;
       citation_number?: number;
     }>;
-    // add other analysis fields if needed
   };
   error?: string;
 } | { error: string } | null;
@@ -37,11 +36,12 @@ function Index() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ResultType>(null);
+  const [showSubScores, setShowSubScores] = useState(false);
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const postResponse = await fetch(URL, {
+      const postResponse = await fetch(`${URL}/eval`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,57 +76,134 @@ function Index() {
       );
     }
 
-    if (result && 'product' in result) {
+    if (result && !result.error && 'product' in result) {
       return (
         <div className="w-96 flex flex-col items-stretch space-y-4 mt-4">
           <h2 className="text-lg font-bold text-center">{result.product.productName}</h2>
-          <div className="p-4 border rounded bg-muted text-muted-foreground">
-            <div className="flex items-center mb-2">
-              <span className="font-semibold">Sustainability Score:</span>
-              <span className="ml-2 font-semibold">{result.analysis.sustainabilityScore}/10</span>
-            </div>
-            <div className="flex items-center w-full space-x-1 mb-4">
-              {[...Array(10)].map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-4 flex-1 rounded ${idx < result.analysis.sustainabilityScore ? 'bg-green-500' : 'bg-gray-300'}`}
-                  title={`Score ${idx + 1}`}
-                />
-              ))}
-            </div>
+
+          <div className="p-4 border rounded bg-muted text-muted-foreground space-y-4">
+            {"sustainabilityScore" in result.analysis && (
+              <div className="mb-4">
+                <div className="flex items-center mb-1">
+                  <span className="font-semibold text-lg">Total Sustainability Score:</span>
+                  <span className="ml-2 font-semibold text-lg">{result.analysis.sustainabilityScore}/10</span>
+                </div>
+                <div className="flex items-center w-full space-x-1 mb-2">
+                  {[...Array(10)].map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-4 flex-1 rounded ${idx < Math.round(result.analysis.sustainabilityScore) ? 'bg-blue-500' : 'bg-gray-300'}`}
+                      title={`Score ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              className="w-full text-left font-semibold py-2 px-3 rounded bg-accent hover:bg-accent/80 transition mb-2"
+              onClick={() => setShowSubScores((prev) => !prev)}
+            >
+              {showSubScores ? 'Hide Sub-Scores ▲' : 'Show Sub-Scores ▼'}
+            </button>
+            
+            {showSubScores && (
+              <div className="space-y-4">
+                {([
+                  { label: "Materials & Sourcing", key: "sustainabilityScore_materialsAndSourcing" },
+                  { label: "Production & Manufacturing", key: "sustainabilityScore_productionAndManufacturing" },
+                  { label: "Distribution & Logistics", key: "sustainabilityScore_distributionAndLogistics" },
+                  { label: "Product Use", key: "sustainabilityScore_productUse" },
+                  { label: "End-of-Life Management", key: "sustainabilityScore_endOfLifeManagement" },
+                ] as const).map(({ label, key }) => {
+                  type SubScoreKey =
+                    | "sustainabilityScore_materialsAndSourcing"
+                    | "sustainabilityScore_productionAndManufacturing"
+                    | "sustainabilityScore_distributionAndLogistics"
+                    | "sustainabilityScore_productUse"
+                    | "sustainabilityScore_endOfLifeManagement";
+                  const analysis = result.analysis as typeof result.analysis & Partial<Record<SubScoreKey, number>>;
+                  return analysis[key as SubScoreKey] !== undefined && (
+                    <div key={key}>
+                      <div className="flex items-center mb-1">
+                        <span className="font-semibold">{label}:</span>
+                        <span className="ml-2 font-semibold">{analysis[key as SubScoreKey]}/10</span>
+                      </div>
+                      <div className="flex items-center w-full space-x-1 mb-2">
+                        {[...Array(10)].map((_, idx) => (
+                          <div
+                            key={idx}
+                            className={`h-4 flex-1 rounded ${idx < (analysis[key as SubScoreKey] ?? 0) ? 'bg-green-500' : 'bg-gray-300'}`}
+                            title={`Score ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             <div>
               <span className="font-semibold">Sustainability Criticism:</span>
               <ul className="list-disc pl-5 mt-1">
-                {result.analysis.sustainabilityCriticism.map((item, idx) => (
-                  <li key={idx} className="mb-2">
-                    {item.criticism}
-                    {item.citation && (
-                      <span className="block text-xs text-blue-600 dark:text-blue-300">
-                        [<a href={item.citation} target="_blank" rel="noopener noreferrer">
-                          Reference
-                        </a>]
-                      </span>
-                    )}
-                  </li>
-                ))}
+                {result.analysis.sustainabilityCriticism.map(
+                  (
+                    item: { criticism: string; citation?: string; citation_number?: number },
+                    idx: number
+                  ) => {
+                    const isValidCitation =
+                      typeof item.citation === 'string' &&
+                      (item.citation.startsWith('http://') || item.citation.startsWith('https://'));
+                    return (
+                      <li key={idx} className="mb-2">
+                        {item.criticism}
+                        {isValidCitation && (
+                          <span className="block text-xs text-blue-600 dark:text-blue-300">
+                            [<a href={item.citation} target="_blank" rel="noopener noreferrer">
+                              Reference
+                            </a>]
+                          </span>
+                        )}
+                      </li>
+                    );
+                  }
+                )}
               </ul>
             </div>
           </div>
 
+          <DataVerification
+            productName={result.product.productName}
+            sustainabilityScore={result.analysis.sustainabilityScore}
+            criticisms={result.analysis.sustainabilityCriticism}
+          />
+
           <div className="mb-2 text-lg font-bold text-center">Alternatives</div>
           <div className="flex flex-row justify-center space-x-4">
-            {result.analysis.alternativeProducts.map((alt, idx) => (
-              <a
-                key={idx}
-                href={alt.product_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 p-4 border rounded bg-muted text-muted-foreground min-w-[180px] max-w-xs transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
-              >
-                <div className="font-bold mb-2">{alt.name}</div>
-                <div className="text-sm mb-2">{alt.reason}</div>
-              </a>
-            ))}
+            {result.analysis.alternativeProducts.map(
+              (
+                alt: {
+                  name: string;
+                  reason: string;
+                  product_link: string;
+                  citation?: string;
+                  citation_number?: number;
+                },
+                idx: number
+              ) => (
+                <a
+                  key={idx}
+                  href={alt.product_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 p-4 border rounded bg-muted text-muted-foreground min-w-[180px] max-w-xs transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                >
+                  <div className="font-bold mb-2">{alt.name}</div>
+                  <div className="text-sm mb-2">{alt.reason}</div>
+                </a>
+              )
+            )}
           </div>
         </div>
       );
