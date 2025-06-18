@@ -116,14 +116,18 @@ export const BrandCarousel = () => {
 	};
 
 	return (
-		<div className="w-full max-w-5xl mx-auto px-4">
+		<div className="w-full max-w-5xl mx-auto px-4 relative">
 			<AnimatePresence mode="wait" initial={false}>
 				{hoveredCategory === null ? (
 					<motion.div
+						key="carousel"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.8, ease: 'easeInOut' }}
+						transition={{
+							duration: 0.8,
+							ease: [0.4, 0, 0.2, 1],
+						}}
 						className="overflow-hidden"
 						ref={emblaRef}
 					>
@@ -143,10 +147,15 @@ export const BrandCarousel = () => {
 					</motion.div>
 				) : (
 					<motion.div
+						key="info-card"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.8, ease: 'easeInOut' }}
+						transition={{
+							duration: 0.8,
+							ease: [0.4, 0, 0.2, 1],
+						}}
+						className="absolute inset-0"
 						onMouseLeave={handleMouseLeave}
 					>
 						<CategoryInformationCard
