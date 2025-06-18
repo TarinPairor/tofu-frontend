@@ -8,7 +8,7 @@ import type { TofuProduct } from '@/lib/supabase'
 import { cookies } from '@/lib/cookies'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+// import { Skeleton } from '@/components/ui/skeleton'
 import { Pencil } from 'lucide-react'
 import {
   Dialog,
@@ -21,9 +21,9 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useQuery } from '@tanstack/react-query'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { X, BarChart3 } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+// import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { X, BarChart3, Trophy, Star, Leaf, Trash2, ShoppingCart, ExternalLink } from 'lucide-react'
 import { DashboardTabs } from '../components/dashboard/Tabs'
 
 export const Route = createFileRoute('/dashboard')({
@@ -33,20 +33,80 @@ export const Route = createFileRoute('/dashboard')({
 export default function Dashboard() {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showScore, setShowScore] = useState(true)
   const [, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<TofuProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
-  const [editingProduct, setEditingProduct] = useState<TofuProduct | null>(null)
-  const [editForm, setEditForm] = useState({
-    product_name: '',
-    sustainability_level: '',
-    product_description: '',
-  })
-  const [showScore, setShowScore] = useState(true)
+  const [productToDelete, setProductToDelete] = useState<TofuProduct | null>(null)
+  const [productToEdit, setProductToEdit] = useState<TofuProduct | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const queryClient = useQueryClient()
 
-  const { data: productsData } = useQuery<TofuProduct[]>({
+  const { data: productsData, refetch: refetchProducts, isLoading: isLoadingProducts } = useQuery<TofuProduct[]>({
     queryKey: ['products'],
     queryFn: () => productApi.getAllProducts()
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (productId: number) => productApi.deleteProduct(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      refetchProducts()
+      setProductToDelete(null)
+    },
+  })
+
+  const editMutation = useMutation({
+    mutationFn: (updatedProduct: Partial<TofuProduct>) => {
+      if (!productToEdit) throw new Error('No product selected for editing')
+      return productApi.updateProduct(productToEdit.id, updatedProduct)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      refetchProducts()
+      setProductToEdit(null)
+    },
+  })
+
+  const addProductMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const user = cookies.getUser()
+      if (!user) {
+        throw new Error('User not logged in')
+      }
+
+      const response = await fetch('https://tofu-backend-gules.vercel.app/eval', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze product')
+      }
+
+      const data = await response.json()
+      return productApi.addProduct({
+        product_name: data.data.product.productName,
+        sustainability_level: data.data.analysis.sustainabilityScore,
+        product_link: url,
+        product_image: data.data.product.image,
+        product_description: data.data.product.description,
+        user_id: user.id
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      refetchProducts()
+      setUrl('')
+      setIsLoading(false)
+    },
+    onError: () => {
+      setIsLoading(false)
+    }
   })
 
   const [averageScore, setAverageScore] = useState<number | null>(null)
@@ -89,121 +149,86 @@ export default function Dashboard() {
     fetchProducts()
   }, [])
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!url) return
+    
     setIsLoading(true)
-    setError(null)
-
-    try {
-      const user = cookies.getUser()
-      if (!user) {
-        setError('User not logged in')
-        return
-      }
-
-      // Send request to backend
-      const response = await fetch('https://tofu-backend-gules.vercel.app/eval', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to analyze product')
-      }
-
-      const data = await response.json()
-
-      console.log(data)
-
-
-    
-      // Add product to database
-      const newProduct = await productApi.addProduct({
-        product_name: data.data.product.productName,
-        user_id: user.id,
-        sustainability_level: data.data.analysis.sustainabilityScore,
-        product_link: url,
-        product_image: data.data.product.image,
-        product_description: data.data.product.description,
-      })
-
-    
-
-      if (newProduct) {
-        setProducts(prev => [newProduct, ...prev])
-        setUrl('')
-      }
-    } catch (err) {
-      console.error('Error:', err)
-      setError('Failed to analyze product')
-    } finally {
-      setIsLoading(false)
-    }
+    addProductMutation.mutate(url)
   }
 
-  const handleEditClick = (product: TofuProduct) => {
-    setEditingProduct(product)
-    setEditForm({
-      product_name: product.product_name || '',
-      sustainability_level: product.sustainability_level || '',
-      product_description: product.product_description || '',
+  const handleEdit = () => {
+    if (!productToEdit) return
+    editMutation.mutate({
+      product_name: editName,
+      product_description: editDescription
     })
   }
 
-  const handleEditSubmit = async () => {
-    if (!editingProduct) return
-
-    try {
-      const updatedProduct = await productApi.updateProduct(editingProduct.id, {
-        product_name: editForm.product_name,
-        sustainability_level: editForm.sustainability_level,
-        product_description: editForm.product_description,
-      })
-
-      if (updatedProduct) {
-        setProducts(prev =>
-          prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p))
-        )
-        setEditingProduct(null)
-      }
-    } catch (err) {
-      console.error('Error updating product:', err)
-      setError('Failed to update product')
+  useEffect(() => {
+    if (productToEdit) {
+      setEditName(productToEdit.product_name || '')
+      setEditDescription(productToEdit.product_description || '')
     }
+  }, [productToEdit])
+
+  if (isLoadingProducts) {
+    return <div>Loading...</div>
   }
 
   const getScoreMessage = (score: number) => {
     if (score < 5) {
       return {
         title: "🌱 Room for Improvement",
-        description: `Your sustainability score is ${score}/10. Consider choosing more eco-friendly products to help protect our planet!`
+        description: `Your sustainability score is ${score}/10. Consider choosing more eco-friendly products to help protect our planet!`,
+        color: "bg-red-50 border-red-200"
+      }
+    } else if (score < 8) {
+      return {
+        title: "🌟 Good Progress",
+        description: `Your sustainability score is ${score}/10. You're making good choices!`,
+        color: "bg-yellow-50 border-yellow-200"
       }
     } else {
       return {
-        title: "🌟 Great Job!",
-        description: `Your sustainability score is ${score}/10. Keep up the amazing work in making eco-conscious choices!`
+        title: "🏆 Excellent Work",
+        description: `Your sustainability score is ${score}/10. You're a sustainability champion!`,
+        color: "bg-green-50 border-green-200"
       }
     }
   }
 
+  const getScoreColor = (score: number) => {
+    if (score >= 8) return 'bg-green-500'
+    if (score >= 5) return 'bg-yellow-500'
+    return 'bg-red-500'
+  }
+
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {showScore && averageScore !== null && (
-        <Alert className={`mb-4 ${averageScore < 5 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-          <div className="flex justify-between items-center">
-            <div>
-              <AlertTitle>{getScoreMessage(averageScore).title}</AlertTitle>
-              <AlertDescription>
-                {getScoreMessage(averageScore).description}
-              </AlertDescription>
+      {averageScore !== null && (
+        <Card className={getScoreMessage(averageScore).color}>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold">{getScoreMessage(averageScore).title}</h2>
+                  <div className="flex gap-1">
+                    {averageScore >= 8 && <Trophy className="h-5 w-5 text-yellow-500" />}
+                    {averageScore >= 6 && <Star className="h-5 w-5 text-blue-500" />}
+                    {averageScore >= 4 && <Leaf className="h-5 w-5 text-green-500" />}
+                  </div>
+                </div>
+                <p className="text-muted-foreground">
+                  {getScoreMessage(averageScore).description}
+                </p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowScore(false)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setShowScore(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </Alert>
+          </CardContent>
+        </Card>
       )}
 
       <div className="flex justify-end">
@@ -222,6 +247,79 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <Card className="border-2 border-gray-100 shadow-sm">
+        <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <ShoppingCart className="h-6 w-6 text-green-600" />
+            <div>
+              <CardTitle className="text-xl font-semibold text-gray-800">View Shopping Cart</CardTitle>
+              <CardDescription className="text-gray-600">
+                Manage your sustainable shopping list
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            {products?.map((product) => {
+              const score = parseInt(product.sustainability_level || '0')
+              return (
+                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex-1">
+                    <h3 className="font-medium">{product.product_name}</h3>
+                    {product.product_description && (
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {product.product_description}
+                      </p>
+                    )}
+                    {product.product_link && (
+                      <a 
+                        href={product.product_link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-500 hover:text-blue-700 hover:underline inline-flex items-center gap-1 mt-2"
+                      >
+                        View Product
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-32">
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${getScoreColor(score)} transition-all duration-500`}
+                          style={{ width: `${score * 10}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="font-medium">{score}/10</span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => setProductToEdit(product)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setProductToDelete(product)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -244,127 +342,76 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <Card>
-              <CardHeader>
-          <CardTitle>Your Products</CardTitle>
-          <CardDescription>
-            Products you've analyzed for sustainability
-          </CardDescription>
-              </CardHeader>
-              <CardContent>
-          {loadingProducts ? (
-            // Loading skeleton
-            <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : products.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              No products analyzed yet. Add your first product above!
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {products.map((product) => (
-                <Card key={product.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      {product.product_image && (
-                        <img
-                          src={product.product_image}
-                          alt={product.product_name || 'Product'}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <h3 className="font-semibold">{product.product_name}</h3>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditClick(product)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {product.product_description}
-                        </p>
-                        <div className="mt-2">
-                          <span className="text-sm font-medium">
-                            Sustainability Score: {product.sustainability_level}
-                          </span>
-                        </div>
-                        <a
-                          href={product.product_link || undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-500 hover:underline mt-1 inline-block"
-                        >
-                          View Product
-                        </a>
-                      </div>
-                    </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-          )}
-        </CardContent>
-      </Card>
+      <Dialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Product</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {productToDelete?.product_name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setProductToDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => productToDelete && deleteMutation.mutate(productToDelete.id)}
+              disabled={deleteMutation.isPending}
+            >
+            <div className="flex items-center gap-2 text-white"> {deleteMutation.isPending ? 'Deleting...' : 'Delete'}</div>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+      <Dialog open={!!productToEdit} onOpenChange={() => setProductToEdit(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
-              Make changes to the product details
+              Update the product details below
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="product_name">Product Name</Label>
+              <label htmlFor="name" className="text-sm font-medium">
+                Product Name
+              </label>
               <Input
-                id="product_name"
-                value={editForm.product_name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setEditForm(prev => ({ ...prev, product_name: e.target.value }))
-                }
+                id="name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Enter product name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sustainability_level">Sustainability Score</Label>
+              <label htmlFor="description" className="text-sm font-medium">
+                Product Description
+              </label>
               <Input
-                id="sustainability_level"
-                value={editForm.sustainability_level}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setEditForm(prev => ({ ...prev, sustainability_level: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="product_description">Description</Label>
-              <Textarea
-                id="product_description"
-                value={editForm.product_description}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setEditForm(prev => ({ ...prev, product_description: e.target.value }))
-                }
+                id="description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Enter product description"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingProduct(null)}>
+            <Button
+              variant="outline"
+              onClick={() => setProductToEdit(null)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleEditSubmit}>
-              Save Changes
+            <Button
+              onClick={handleEdit}
+              disabled={editMutation.isPending}
+            >
+              {editMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
