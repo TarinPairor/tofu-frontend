@@ -17,12 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { X } from 'lucide-react'
+import { X, BarChart3 } from 'lucide-react'
+import { DashboardTabs } from '../components/dashboard/Tabs'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
@@ -31,7 +33,7 @@ export const Route = createFileRoute('/dashboard')({
 export default function Dashboard() {
   const [url, setUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [, setError] = useState<string | null>(null)
   const [products, setProducts] = useState<TofuProduct[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [editingProduct, setEditingProduct] = useState<TofuProduct | null>(null)
@@ -204,32 +206,41 @@ export default function Dashboard() {
         </Alert>
       )}
 
+      <div className="flex justify-end">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              View Progress
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Sustainability Progress</DialogTitle>
+            </DialogHeader>
+            <DashboardTabs />
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Add New Product</CardTitle>
-          <CardDescription>
-            Enter a product URL to analyze its sustainability
-          </CardDescription>
+          <CardDescription>Enter a product URL to evaluate its sustainability</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
-              type="text"
-              placeholder="https://example.com/product"
+              type="url"
+              placeholder="Enter product URL"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="flex-1"
+              required
             />
-            <Button 
-              onClick={handleSubmit}
-              disabled={isLoading || !url}
-            >
-              {isLoading ? 'Analyzing...' : 'Analyze'}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Adding...' : 'Add Product'}
             </Button>
-              </div>
-          {error && (
-            <p className="text-sm text-red-500 mt-2">{error}</p>
-          )}
+          </form>
         </CardContent>
       </Card>
 
