@@ -40,6 +40,13 @@ function Index() {
   const [result, setResult] = useState<ResultType>(null);
   const [showSubScores, setShowSubScores] = useState(false);
 
+  const subScoreDescriptions = {
+    sustainabilityScore_materialsAndSourcing: "Measures the sustainability of raw materials and sourcing practices.",
+    sustainabilityScore_productionAndManufacturing: "Assesses the environmental impact of production and manufacturing processes.",
+    sustainabilityScore_distributionAndLogistics: "Evaluates the carbon footprint and efficiency of distribution and logistics.",
+    sustainabilityScore_productUse: "Considers the sustainability of the product during its use phase.",
+    sustainabilityScore_endOfLifeManagement: "Looks at how the product is disposed of, recycled, or composted at end of life.",
+  };
   // Replace with actual URL that is stored as env variable or configuration
   // const postmanUrl = 'https://1a57c95a-c26f-4017-abc9-c86ac177dd4d.mock.pstmn.io'; // Replace with your actual Postman URL
   // const URL = 'https://tofu-backend-gules.vercel.app'; // Example URL for testing
@@ -149,8 +156,14 @@ function Index() {
                 const analysis = result.analysis as typeof result.analysis & Partial<Record<SubScoreKey, number>>;
                 return analysis[key as SubScoreKey] !== undefined && (
                   <div key={key}>
-                    <div className="flex items-center mb-1">
-                      <span className="font-semibold">{label}:</span>
+                    <div className="flex items-center mb-1 relative group">
+                      <span className="font-semibold cursor-help">
+                        {label}:
+                        {/* Tooltip */}
+                        <span className="absolute left-1/2 z-10 mt-2 w-56 -translate-x-1/2 scale-0 rounded bg-gray-900 p-2 text-xs text-white opacity-0 shadow-lg transition-all group-hover:scale-100 group-hover:opacity-100">
+                          {subScoreDescriptions[key as SubScoreKey]}
+                        </span>
+                      </span>
                       <span className="ml-2 font-semibold">{analysis[key as SubScoreKey]}/10</span>
                     </div>
                     <div className="flex items-center w-full space-x-1 mb-2">
